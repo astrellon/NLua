@@ -276,6 +276,11 @@ end
             public Stream StdIn = null;
             public Stream StdErr = null;
             public string RootFolder = null;
+            public Func<string, string> GetEnvHandler = null;
+            public Action<string, string> SetEnvHandler = null;
+            public Func<int, long> GetTimeHandler = null;
+            public Action ExitHandler = null;
+            public Func<string, int> ExecuteHandler = null;
 
             public LuaOptions()
             {
@@ -323,6 +328,12 @@ end
             #if USE_KOPILUA
             if (options != null)
             {
+                luaState.SetEnvHandler = options.SetEnvHandler;
+                luaState.GetEnvHandler = options.GetEnvHandler;
+                luaState.GetTimeHandler = options.GetTimeHandler;
+                luaState.ExitHandler = options.ExitHandler;
+                luaState.ExecuteHandler = options.ExecuteHandler;
+
                 // RootFolder
                 if (options.RootFolder != null)
                 {
