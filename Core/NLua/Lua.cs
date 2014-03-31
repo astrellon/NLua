@@ -270,15 +270,95 @@ end
 		}
 		#endregion
 
+        public class LuaOptions
+        {
+            public Stream StdOut = null;
+            public Stream StdIn = null;
+            public Stream StdErr = null;
+            public string RootFolder = null;
+
+            public LuaOptions()
+            {
+
+            }
+            public LuaOptions(string rootFolder, Stream stdout, Stream stdin, Stream stderr)
+            {
+                RootFolder = rootFolder;
+                StdOut = stdout;
+                StdIn = stdin;
+                StdErr = stderr;
+            }
+        }
+
 		public Lua ()
 		{
 			luaState = LuaLib.LuaLNewState ();	// steffenj: Lua 5.1.1 API change (lua_open is gone)
+
+            #if USE_KOPILUA
+            luaState.StdOut = Console.OpenStandardOutput();
+            luaState.StdIn = Console.OpenStandardInput();
+            luaState.StdErr = Console.OpenStandardError();
+            #endif
+
 			LuaLib.LuaLOpenLibs (luaState);		// steffenj: Lua 5.1.1 API change (luaopen_base is gone, just open all libs right here)
 			Init ();
 			// We need to keep this in a managed reference so the delegate doesn't get garbage collected
 			panicCallback = new LuaNativeFunction (PanicCallback);
 			LuaLib.LuaAtPanic (luaState, panicCallback);
 		}
+
+        public Lua(LuaOptions options)
+        {
+            luaState = LuaLib.LuaLNewState();	// steffenj: Lua 5.1.1 API change (lua_open is gone)
+            SetOptions(options);
+            LuaLib.LuaLOpenLibs(luaState);		// steffenj: Lua 5.1.1 API change (luaopen_base is gone, just open all libs right here)
+            Init();
+            // We need to keep this in a managed reference so the delegate doesn't get garbage collected
+            panicCallback = new LuaNativeFunction(PanicCallback);
+            LuaLib.LuaAtPanic(luaState, panicCallback);
+        }
+
+        private void SetOptions(LuaOptions options)
+        {
+            #if USE_KOPILUA
+            if (options != null)
+            {
+                // RootFolder
+                if (options.RootFolder != null)
+                {
+                    luaState.RootFolder = options.RootFolder;
+                }
+                // StdOut
+                if (options.StdOut != null)
+                {
+                    luaState.StdOut = options.StdOut;
+                }
+                else
+                {
+                    luaState.StdOut = Console.OpenStandardOutput();
+                }
+                // StdIn
+                if (options.StdIn != null)
+                {
+                    luaState.StdIn = options.StdIn;
+                }
+                else
+                {
+                    luaState.StdIn = Console.OpenStandardInput();
+                }
+                // StdErr
+                if (options.StdErr != null)
+                {
+                    luaState.StdErr = options.StdErr;
+                }
+                else
+                {
+                    luaState.StdErr = Console.OpenStandardError();
+                }
+
+            }
+            #endif
+        }
 
 		/*
 			* CAUTION: NLua.Lua instances can't share the same lua state! 
