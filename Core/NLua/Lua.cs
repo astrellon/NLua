@@ -323,6 +323,11 @@ end
             LuaLib.LuaAtPanic(luaState, panicCallback);
         }
 
+        public void SetWorkingDirectory(string path)
+        {
+            luaState.WorkingDirectory.SetPath(path);
+        }
+
         private void SetOptions(LuaOptions options)
         {
             #if USE_KOPILUA
