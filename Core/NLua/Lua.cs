@@ -275,20 +275,22 @@ end
             public Stream StdOut = null;
             public Stream StdIn = null;
             public Stream StdErr = null;
-            public string RootFolder = null;
             public Func<string, string> GetEnvHandler = null;
             public Action<string, string> SetEnvHandler = null;
             public Func<int, long> GetTimeHandler = null;
             public Action ExitHandler = null;
             public Func<string, int> ExecuteHandler = null;
+            public Func<string, FileMode, FileAccess, Stream> OpenFileHandler = null;
+            public Func<string, int> RemoveFileHandler = null;
+            public Func<string, string, int> RenameFileHandler = null;
+            public Func<string> GetTempFilenameHandler = null;
 
             public LuaOptions()
             {
 
             }
-            public LuaOptions(string rootFolder, Stream stdout, Stream stdin, Stream stderr)
+            public LuaOptions(Stream stdout, Stream stdin, Stream stderr)
             {
-                RootFolder = rootFolder;
                 StdOut = stdout;
                 StdIn = stdin;
                 StdErr = stderr;
@@ -323,11 +325,6 @@ end
             LuaLib.LuaAtPanic(luaState, panicCallback);
         }
 
-        public void SetWorkingDirectory(string path)
-        {
-            luaState.WorkingDirectory.SetPath(path);
-        }
-
         private void SetOptions(LuaOptions options)
         {
             #if USE_KOPILUA
@@ -338,12 +335,11 @@ end
                 luaState.GetTimeHandler = options.GetTimeHandler;
                 luaState.ExitHandler = options.ExitHandler;
                 luaState.ExecuteHandler = options.ExecuteHandler;
+                luaState.RenameFileHandler = options.RenameFileHandler;
+                luaState.RemoveFileHandler = options.RemoveFileHandler;
+                luaState.GetTempFilenameHandler = options.GetTempFilenameHandler;
+                luaState.OpenFileHandler = options.OpenFileHandler;
 
-                // RootFolder
-                if (options.RootFolder != null)
-                {
-                    luaState.RootFolder = options.RootFolder;
-                }
                 // StdOut
                 if (options.StdOut != null)
                 {
